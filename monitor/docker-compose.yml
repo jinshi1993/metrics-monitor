@@ -1,0 +1,44 @@
+version: "3.6"
+services:
+  grafana:
+    image: grafana/grafana:7.3.3
+    ports:
+      - "8300:3000"
+    environment:
+      GF_INSTALL_PLUGINS: grafana-clock-panel,briangann-gauge-panel,natel-plotly-panel,grafana-simple-json-datasource
+    user: "0"
+    volumes:
+      - /home/zhangsan/metrics-monitor/data/grafana/data:/var/lib/grafana
+      - /home/zhangsan/metrics-monitor/data/grafana/conf/grafana.ini:/etc/grafana/grafana.ini
+
+  prometheus:
+    image: prom/prometheus:v2.25.2
+    ports:
+      - "9090:9090"
+    user: "0"
+    volumes:
+      - /home/zhangsan/metrics-monitor/data/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /home/zhangsan/metrics-monitor/data/prometheus/conf/etcd3_alert.rules.yml:/etc/prometheus/etcd3_alert.rules.yml
+      - /home/zhangsan/metrics-monitor/data/prometheus/data/:/prometheus 
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+
+  alertmanager:
+    image: prom/alertmanager:v0.21.0
+    #ports:
+    #  - "9093:9093"
+    # 这里使用host网络模式，发送告警邮件到宿主机的邮件服务器上
+    # 也可以再加一个邮件服务器服务，在docker网络下发送邮件
+    network_mode: "host"
+    user: "0"
+    volumes:
+      - /home/zhangsan/metrics-monitor/data/alertmanager/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - /home/zhangsan/metrics-monitor/data/alertmanager/data/:/alertmanager 
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"

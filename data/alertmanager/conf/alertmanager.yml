@@ -1,0 +1,16 @@
+global: 
+  smtp_smarthost: 'localhost:25'
+  smtp_from: 'zhangsan@localdomain'
+  smtp_require_tls: false
+
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'etcd'
+
+receivers:
+  - name: 'etcd'
+    email_configs:
+    - to: 'zhangsan@126.com'
